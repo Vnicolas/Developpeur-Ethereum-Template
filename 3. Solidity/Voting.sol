@@ -40,18 +40,18 @@ contract Voting is Ownable {
     
     // The current status of the session
     WorkflowStatus public currentStatus;
-
-    // The blank proposal if voters want vote to 
-    Proposal private blankProposal = Proposal("BLANK", 0);
-
-    // Mapping voter address to the voter
-    mapping(address => Voter) private whitelist;
-
+    
     // Array of all proposals
     Proposal[] private proposals;
 
     // Winning Proposal
     Proposal private winningProposal;
+    
+    // The blank proposal if voters want vote to 
+    Proposal private blankProposal = Proposal("BLANK", 0);
+
+    // Mapping voter address to the voter
+    mapping(address => Voter) private whitelist;
 
     // Total of voters for the session
     uint private nbVoters;
