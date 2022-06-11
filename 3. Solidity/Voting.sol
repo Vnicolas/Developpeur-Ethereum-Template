@@ -18,14 +18,14 @@ contract Voting is Ownable {
     using Address for address;
 
     struct Voter {
-        bool isRegistered; // if true, that person is registered
+        bool isRegistered; // If true, that person is registered
         bool hasVoted; // if true, that person has voted
-        uint votedProposalId; // index of the voted proposal for this voter
+        uint votedProposalId; // Index of the voted proposal for this voter
     }
 
     struct Proposal {
-        string description; // short text
-        uint voteCount; // number of accumulated votes
+        string description; // Short text
+        uint voteCount; // Number of accumulated votes
     }
 
     enum WorkflowStatus {
@@ -64,10 +64,10 @@ contract Voting is Ownable {
 
     /**
      * @dev Returns if the address is in the whitelist
-     * @param _voterAddress Address to check
      */
-    function isWhitelisted(address _voterAddress) internal view returns(bool) {
-        return whitelist[_voterAddress].isRegistered;
+    modifier isWhitelisted() {
+        require(whitelist[msg.sender].isRegistered, "This address is not whitelisted.");
+        _;
     }
 
     /**
@@ -106,7 +106,7 @@ contract Voting is Ownable {
      */
     function addToWhitelist(address _address) public onlyOwner {
         require(!_address.isContract(), "Contracts are not allowed.");
-        require(!isWhitelisted(_address), "This address is already whitelisted.");
+        require(!whitelist[_address].isRegistered, "This address is already whitelisted.");
         require(currentStatus == WorkflowStatus.RegisteringVoters, "Voters registrations are not open or are closed.");
         whitelist[_address] = Voter(true, false, 0);
         nbVoters += 1;
@@ -117,19 +117,17 @@ contract Voting is Ownable {
      * @dev Allows to a voter to add a proposal
      * @param _proposalDescription The proposal description
      */
-    function makeProposal(string calldata _proposalDescription) public {
-        require(isWhitelisted(msg.sender), "This address is not whitelisted.");
+    function makeProposal(string calldata _proposalDescription) isWhitelisted public {
         require(currentStatus == WorkflowStatus.ProposalsRegistrationStarted, "Proposals registrations are not open or are closed.");
         proposals.push(Proposal(_proposalDescription, 0));
-        emit ProposalRegistered(proposals.length + 1);
+        emit ProposalRegistered(proposals.length - 1);
     }
 
     /**
      * @dev Allows to a voter to vote for a proposal with its id
      * @param _votedProposalId The id of the proposal to vote
      */
-    function vote(uint _votedProposalId) public {
-        require(isWhitelisted(msg.sender), "This address is not whitelisted.");
+    function vote(uint _votedProposalId) isWhitelisted public {
         require(currentStatus == WorkflowStatus.VotingSessionStarted, "Voting session not started or is closed.");
         require(!whitelist[msg.sender].hasVoted, "This address has already voted.");
         proposals[_votedProposalId].voteCount++;
@@ -155,7 +153,7 @@ contract Voting is Ownable {
                 winningProposal = proposals[index];
             }
         }
-        setWorkflowStatus(uint(WorkflowStatus.VotesTallied));
+        setWorkflowStatus(uint8(WorkflowStatus.VotesTallied));
     }
 
     /**
