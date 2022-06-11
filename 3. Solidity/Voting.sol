@@ -117,7 +117,7 @@ contract Voting is Ownable {
      * @dev Allows to a voter to add a proposal
      * @param _proposalDescription The proposal description
      */
-    function makeProposal(string calldata _proposalDescription) isWhitelisted public {
+    function makeProposal(string calldata _proposalDescription) public isWhitelisted {
         require(currentStatus == WorkflowStatus.ProposalsRegistrationStarted, "Proposals registrations are not open or are closed.");
         proposals.push(Proposal(_proposalDescription, 0));
         emit ProposalRegistered(proposals.length - 1);
@@ -127,7 +127,7 @@ contract Voting is Ownable {
      * @dev Allows to a voter to vote for a proposal with its id
      * @param _votedProposalId The id of the proposal to vote
      */
-    function vote(uint _votedProposalId) isWhitelisted public {
+    function vote(uint _votedProposalId) public isWhitelisted{
         require(currentStatus == WorkflowStatus.VotingSessionStarted, "Voting session not started or is closed.");
         require(!whitelist[msg.sender].hasVoted, "This address has already voted.");
         proposals[_votedProposalId].voteCount++;
