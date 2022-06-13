@@ -29,7 +29,6 @@ contract Voting is Ownable {
     }
 
     enum WorkflowStatus {
-        Before, // Added in order to not start RegisteringVoters next to contract deployment.
         RegisteringVoters, // Admin can register voter with their address
         ProposalsRegistrationStarted, // Voters can register their proposals
         ProposalsRegistrationEnded, // Voters are no longer able to register their proposals
@@ -51,7 +50,7 @@ contract Voting is Ownable {
     Proposal private blankProposal = Proposal("BLANK", 0);
 
     // Mapping voter address to the voter
-    mapping(address => Voter) private whitelist;
+    mapping(address => Voter) public whitelist;
 
     // Total of voters for the session
     uint private nbVoters;
@@ -105,9 +104,9 @@ contract Voting is Ownable {
      * @param _address The voter's address
      */
     function addToWhitelist(address _address) public onlyOwner {
+        require(currentStatus == WorkflowStatus.RegisteringVoters, "Voters registrations are not open or are closed.");
         require(!_address.isContract(), "Contracts are not allowed.");
         require(!whitelist[_address].isRegistered, "This address is already whitelisted.");
-        require(currentStatus == WorkflowStatus.RegisteringVoters, "Voters registrations are not open or are closed.");
         whitelist[_address] = Voter(true, false, 0);
         nbVoters += 1;
         emit VoterRegistered(_address);
