@@ -126,7 +126,7 @@ contract Voting is Ownable {
      * @dev Allows to a voter to vote for a proposal with its id
      * @param _votedProposalId The id of the proposal to vote
      */
-    function vote(uint _votedProposalId) public isWhitelisted{
+    function vote(uint _votedProposalId) public isWhitelisted {
         require(currentStatus == WorkflowStatus.VotingSessionStarted, "Voting session not started or is closed.");
         require(!whitelist[msg.sender].hasVoted, "This address has already voted.");
         proposals[_votedProposalId].voteCount++;
