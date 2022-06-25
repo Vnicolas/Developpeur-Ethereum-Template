@@ -1,0 +1,22 @@
+{
+    "name": "voting",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test:dev:js": "truffle test test/*.js --network development"
+    },
+    "keywords": [],
+    "author": "Nicolas Vairaa",
+    "license": "MIT",
+    "dependencies": {
+        "@openzeppelin/contracts": "^4.6.0",
+        "solidity-coverage": "^0.7.21"
+    },
+    "devDependencies": {
+        "@openzeppelin/test-helpers": "^0.5.15",
+        "eth-gas-reporter": "^0.2.25",
+        "prettier": "^2.7.0",
+        "prettier-plugin-solidity": "^1.0.0-beta.19"
+    }
+}
