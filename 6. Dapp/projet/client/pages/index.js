@@ -8,7 +8,7 @@ import Owner from "./owner";
 export default function Home() {
   const [contract, setContract] = useState();
   const [contractWithSigner, setContractWithSigner] = useState();
-  const { provider, walletConnected } = useContext(GlobalContext);
+  const { provider, walletConnected, isOwner } = useContext(GlobalContext);
 
   async function init() {
     if (provider && walletConnected) {
@@ -27,7 +27,7 @@ export default function Home() {
     <div>
       <Header></Header>
       <Container centerContent>
-        {walletConnected && contract && contractWithSigner && (
+        {walletConnected && contract && contractWithSigner && isOwner && (
           <Owner
             contract={contract}
             contractWithSigner={contractWithSigner}
