@@ -36,9 +36,8 @@ module.exports = {
    * $ truffle test --network <network-name>
    */
 
+  contracts_build_directory: "./client/contracts",
   networks: {
-    contracts_build_directory: "../client/src/contracts",
-    //
     development: {
       host: "127.0.0.1", // Localhost (default: none)
       port: 8545, // Standard Ethereum port (default: none)
