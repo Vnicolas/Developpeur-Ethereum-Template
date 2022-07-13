@@ -1,28 +1,73 @@
-import { useContext, useEffect } from "react";
-import GlobalContext from "../utils/global-context";
-import contractInstance from "../utils/get-contract";
+import {
+  Button,
+  Input,
+  InputGroup,
+  InputLeftAddon,
+  Stack,
+  Divider,
+  Heading,
+  Box,
+} from "@chakra-ui/react";
 
 export default function Owner(props) {
-  const { contract, contractWithSigner } = props;
-  const { provider, walletConnected } = useContext(GlobalContext);
+  const { contract, contractWithSigner, currentStatus } = props;
 
-  useEffect(() => {
-    async function init() {
-      const currentStatus = await contract.workflowStatus();
-      console.log(currentStatus);
-    }
-    init();
-  }, []);
-
-  // async function init() {
-  //   if (provider && walletConnected) {
-  //     contract = await contractInstance(provider);
-  //     const signer = provider.getSigner();
-  //     contractWithSigner = contract.connect(signer);
-  //     const currentStatus = await contract.workflowStatus();
-  //     console.log(currentStatus);
-  //   }
-  // };
-
-  return <div>Dapp owner</div>;
+  return (
+    <>
+      <Box padding="6">
+        <Heading textAlign={"center"}>Actions</Heading>
+      </Box>
+      <Stack direction="column" spacing={8}>
+        <InputGroup>
+          <InputLeftAddon children="Add voter" />
+          <Input
+            type="text"
+            placeholder="0x..."
+            disabled={currentStatus === 0 ? false : true}
+          />
+          <Box paddingLeft="2">
+            <Button variant="solid" colorScheme="teal">
+              Submit
+            </Button>
+          </Box>
+        </InputGroup>
+        <Divider />
+        <Button
+          colorScheme="teal"
+          variant="solid"
+          disabled={currentStatus === 0 ? false : true}
+        >
+          Start Proposals registration
+        </Button>
+        <Button
+          colorScheme="teal"
+          variant="solid"
+          disabled={currentStatus === 1 ? false : true}
+        >
+          End Proposals registration
+        </Button>
+        <Button
+          colorScheme="teal"
+          variant="solid"
+          disabled={currentStatus === 2 ? false : true}
+        >
+          Start Voting session
+        </Button>
+        <Button
+          colorScheme="teal"
+          variant="solid"
+          disabled={currentStatus === 3 ? false : true}
+        >
+          End Voting session
+        </Button>
+        <Button
+          colorScheme="teal"
+          variant="solid"
+          disabled={currentStatus === 4 ? false : true}
+        >
+          Tally votes
+        </Button>
+      </Stack>
+    </>
+  );
 }
