@@ -24,7 +24,7 @@ export default function Voter(props) {
       </Box>
       <Stack direction="column" spacing={8}>
         <InputGroup>
-          <InputLeftAddon children="Find a voter" />
+          <InputLeftAddon>Find a voter</InputLeftAddon>
           <Input type="text" placeholder="0x..." />
           <Box paddingLeft="2">
             <Button variant="solid" colorScheme="teal">
@@ -34,7 +34,7 @@ export default function Voter(props) {
         </InputGroup>
         <Divider />
         <InputGroup>
-          <InputLeftAddon children="Find a proposal by its ID" />
+          <InputLeftAddon>Find a proposal by its ID</InputLeftAddon>
           <NumberInput
             defaultValue={0}
             min={0}
@@ -57,7 +57,7 @@ export default function Voter(props) {
           </Box>
         </InputGroup>
         <InputGroup>
-          <InputLeftAddon children="Add proposal" />
+          <InputLeftAddon>Add proposal</InputLeftAddon>
           <Input type="text" disabled={currentStatus === 1 ? false : true} />
           <Box paddingLeft="2">
             <Button
@@ -70,7 +70,7 @@ export default function Voter(props) {
           </Box>
         </InputGroup>
         <InputGroup>
-          <InputLeftAddon children="Vote for a proposal" />
+          <InputLeftAddon>Vote for a proposal</InputLeftAddon>
           <NumberInput min={0} disabled={currentStatus === 3 ? false : true}>
             <NumberInputField />
             <NumberInputStepper>

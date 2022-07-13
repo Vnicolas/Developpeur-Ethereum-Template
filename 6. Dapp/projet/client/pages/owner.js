@@ -19,7 +19,7 @@ export default function Owner(props) {
       </Box>
       <Stack direction="column" spacing={8}>
         <InputGroup>
-          <InputLeftAddon children="Add voter" />
+          <InputLeftAddon>Add voter</InputLeftAddon>
           <Input
             type="text"
             placeholder="0x..."

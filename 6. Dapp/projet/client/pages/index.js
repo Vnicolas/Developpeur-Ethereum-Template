@@ -13,17 +13,7 @@ export default function Home() {
   const [currentStatus, setCurrentStatus] = useState();
   const { provider, walletConnected, isOwner } = useContext(GlobalContext);
 
-  async function init() {
-    if (provider && walletConnected) {
-      const _contract = await contractInstance(provider);
-      setContract(_contract);
-      const signer = provider.getSigner();
-      setContractWithSigner(_contract.connect(signer));
-      getStatus(_contract);
-    }
-  }
-
-  async function getStatus(contract) {
+  const getStatus = async (contract) => {
     const currentStatus = await contract.workflowStatus();
     setCurrentStatus(currentStatus);
     console.log(currentStatus);
@@ -31,7 +21,17 @@ export default function Home() {
       console.log(`Status changed from ${previousStatus} to ${newStatus}`);
       setCurrentStatus(currentStatus);
     });
-  }
+  };
+
+  const init = async () => {
+    if (provider && walletConnected) {
+      const _contract = await contractInstance(provider);
+      setContract(_contract);
+      const signer = provider.getSigner();
+      setContractWithSigner(_contract.connect(signer));
+      getStatus(_contract);
+    }
+  };
 
   useEffect(() => {
     init();
