@@ -8,9 +8,30 @@ import {
   Heading,
   Box,
 } from "@chakra-ui/react";
+import { createRef, useContext } from "react";
+import { handleError } from "../utils/common";
+import GlobalContext from "../utils/global-context";
 
 export default function Owner(props) {
   const { contract, contractWithSigner, currentStatus } = props;
+
+  const global = useContext(GlobalContext);
+
+  let voterInputValue = createRef();
+
+  const addVoter = async () => {
+    try {
+      global.update({ ...global, txLoading: true });
+      const txVoter = await contractWithSigner.addVoter(
+        voterInputValue.current.value
+      );
+      await txVoter.wait();
+      global.update({ ...global, txLoading: false });
+    } catch (error) {
+      global.update({ ...global, txLoading: false });
+      handleError(error);
+    }
+  };
 
   return (
     <>
@@ -23,10 +44,11 @@ export default function Owner(props) {
           <Input
             type="text"
             placeholder="0x..."
+            ref={voterInputValue}
             disabled={currentStatus === 0 ? false : true}
           />
           <Box paddingLeft="2">
-            <Button variant="solid" colorScheme="teal">
+            <Button variant="solid" colorScheme="teal" onClick={addVoter}>
               Submit
             </Button>
           </Box>

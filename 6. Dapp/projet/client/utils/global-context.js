@@ -5,6 +5,7 @@ const GlobalContext = React.createContext({
   userAccount: undefined,
   provider: undefined,
   isOwner: false,
+  txLoading: false,
 });
 
 export default GlobalContext;

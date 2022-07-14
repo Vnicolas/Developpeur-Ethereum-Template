@@ -6,21 +6,42 @@ import contractInstance from "../utils/get-contract";
 import Owner from "./owner";
 import Status from "../components/status/status";
 import Voter from "./voter";
+import { handleSuccess, handleInfos } from "../utils/common";
 
 export default function Home() {
   const [contract, setContract] = useState();
   const [contractWithSigner, setContractWithSigner] = useState();
   const [currentStatus, setCurrentStatus] = useState();
-  const { provider, walletConnected, isOwner } = useContext(GlobalContext);
+  const { provider, walletConnected, isOwner, txLoading } =
+    useContext(GlobalContext);
 
-  const getStatus = async (contract) => {
-    const currentStatus = await contract.workflowStatus();
-    setCurrentStatus(currentStatus);
-    console.log(currentStatus);
+  const subscribeToStatus = (contract) => {
+    contract.off("WorkflowStatusChange");
     contract.on("WorkflowStatusChange", (previousStatus, newStatus) => {
       console.log(`Status changed from ${previousStatus} to ${newStatus}`);
       setCurrentStatus(currentStatus);
     });
+  };
+
+  const subscribeToVoterAdded = async (contract, provider) => {
+    const startBlockNumber = await provider.getBlockNumber();
+    contract.off("VoterRegistered");
+    contract.on("VoterRegistered", (...args) => {
+      const event = args[args.length - 1];
+      if (event.blockNumber <= startBlockNumber) return; // do not react to this event
+      const voterAddr = args[0];
+      if (isOwner) {
+        handleSuccess(`New voter added : ${voterAddr}`);
+      } else {
+        handleInfos(`New voter added : ${voterAddr}`);
+      }
+    });
+  };
+
+  const getStatus = async (contract) => {
+    const currentStatus = await contract.workflowStatus();
+    setCurrentStatus(currentStatus);
+    subscribeToStatus(contract);
   };
 
   const init = async () => {
@@ -30,6 +51,7 @@ export default function Home() {
       const signer = provider.getSigner();
       setContractWithSigner(_contract.connect(signer));
       getStatus(_contract);
+      subscribeToVoterAdded(_contract, provider);
     }
   };
 
@@ -57,6 +79,7 @@ export default function Home() {
                 )}
                 {!isOwner && (
                   <Voter
+                    provider={provider}
                     contract={contract}
                     contractWithSigner={contractWithSigner}
                     currentStatus={currentStatus}
@@ -64,6 +87,14 @@ export default function Home() {
                 )}
               </Box>
             </SimpleGrid>
+          )}
+          {txLoading && (
+            <>
+              <div className="overlay"></div>
+              <div className="generic-loader">
+                <CircularProgress isIndeterminate />
+              </div>
+            </>
           )}
         </>
         {!walletConnected && (

@@ -1,7 +1,9 @@
 import "../styles/globals.scss";
-import { ChakraProvider } from "@chakra-ui/react";
+import { ChakraProvider, createStandaloneToast } from "@chakra-ui/react";
 import { useState } from "react";
 import GlobalContext from "../utils/global-context";
+
+const { ToastContainer } = createStandaloneToast();
 
 function MyApp({ Component, pageProps }) {
   const [state, setState] = useState({
@@ -9,6 +11,7 @@ function MyApp({ Component, pageProps }) {
     userAccount: undefined,
     provider: undefined,
     isOwner: false,
+    txLoading: false,
     update,
   });
 
@@ -17,11 +20,14 @@ function MyApp({ Component, pageProps }) {
   }
 
   return (
-    <GlobalContext.Provider value={state}>
-      <ChakraProvider>
-        <Component {...pageProps} />
-      </ChakraProvider>
-    </GlobalContext.Provider>
+    <>
+      <GlobalContext.Provider value={state}>
+        <ChakraProvider>
+          <Component {...pageProps} />
+        </ChakraProvider>
+      </GlobalContext.Provider>
+      <ToastContainer />
+    </>
   );
 }
 
