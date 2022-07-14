@@ -8,7 +8,6 @@ const idToastInfos = "infos-toast";
 
 const handleError = (error) => {
   if (error.code && !toast.isActive(idToastError)) {
-    console.log(error.data);
     toast({
       id: idToastError,
       title: "A error occured",

@@ -8,13 +8,12 @@ import {
   Heading,
   Box,
 } from "@chakra-ui/react";
-import { createRef, useContext } from "react";
+import { createRef, useContext, useState } from "react";
 import { handleError } from "../utils/common";
 import GlobalContext from "../utils/global-context";
 
 export default function Owner(props) {
   const { contract, contractWithSigner, currentStatus } = props;
-
   const global = useContext(GlobalContext);
 
   let voterInputValue = createRef();
@@ -22,9 +21,21 @@ export default function Owner(props) {
   const addVoter = async () => {
     try {
       global.update({ ...global, txLoading: true });
-      const txVoter = await contractWithSigner.addVoter(
+      const tx = await contractWithSigner.addVoter(
         voterInputValue.current.value
       );
+      await tx.wait();
+      global.update({ ...global, txLoading: false });
+    } catch (error) {
+      global.update({ ...global, txLoading: false });
+      handleError(error);
+    }
+  };
+
+  const startProposalsRegistration = async () => {
+    try {
+      global.update({ ...global, txLoading: true });
+      const txVoter = await contractWithSigner.startProposalsRegistering();
       await txVoter.wait();
       global.update({ ...global, txLoading: false });
     } catch (error) {
@@ -48,7 +59,12 @@ export default function Owner(props) {
             disabled={currentStatus === 0 ? false : true}
           />
           <Box paddingLeft="2">
-            <Button variant="solid" colorScheme="teal" onClick={addVoter}>
+            <Button
+              variant="solid"
+              colorScheme="teal"
+              onClick={addVoter}
+              disabled={currentStatus === 0 ? false : true}
+            >
               Submit
             </Button>
           </Box>
@@ -57,6 +73,7 @@ export default function Owner(props) {
         <Button
           colorScheme="teal"
           variant="solid"
+          onClick={startProposalsRegistration}
           disabled={currentStatus === 0 ? false : true}
         >
           Start Proposals registration

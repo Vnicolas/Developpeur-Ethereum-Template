@@ -17,9 +17,17 @@ export default function Home() {
 
   const subscribeToStatus = (contract) => {
     contract.off("WorkflowStatusChange");
-    contract.on("WorkflowStatusChange", (previousStatus, newStatus) => {
-      console.log(`Status changed from ${previousStatus} to ${newStatus}`);
-      setCurrentStatus(currentStatus);
+    contract.on("WorkflowStatusChange", (...args) => {
+      const event = args[args.length - 1];
+      if (event.blockNumber <= startBlockNumber) return; // do not react to this event
+      console.log(`Status changed from ${args[0]} to ${args[1]}`);
+      setCurrentStatus(args[1]);
+      const toastMessage = `New status setted !`;
+      if (isOwner) {
+        handleSuccess(toastMessage);
+      } else {
+        handleInfos(toastMessage);
+      }
     });
   };
 
@@ -30,10 +38,27 @@ export default function Home() {
       const event = args[args.length - 1];
       if (event.blockNumber <= startBlockNumber) return; // do not react to this event
       const voterAddr = args[0];
+      const toastMessage = `New voter added : ${voterAddr}`;
       if (isOwner) {
-        handleSuccess(`New voter added : ${voterAddr}`);
+        handleSuccess(toastMessage);
       } else {
-        handleInfos(`New voter added : ${voterAddr}`);
+        handleInfos(toastMessage);
+      }
+    });
+  };
+
+  const subscribeToProposalRegistered = async (contract, provider) => {
+    const startBlockNumber = await provider.getBlockNumber();
+    contract.off("ProposalRegistered");
+    contract.on("ProposalRegistered", (...args) => {
+      const event = args[args.length - 1];
+      if (event.blockNumber <= startBlockNumber) return; // do not react to this event
+      const newProposalId = args[0];
+      const toastMessage = `New proposal added : ${newProposalId}`;
+      if (isOwner) {
+        handleInfos(toastMessage);
+      } else {
+        handleSuccess(toastMessage);
       }
     });
   };
@@ -52,6 +77,7 @@ export default function Home() {
       setContractWithSigner(_contract.connect(signer));
       getStatus(_contract);
       subscribeToVoterAdded(_contract, provider);
+      subscribeToProposalRegistered(_contract, provider);
     }
   };
 
