@@ -8,22 +8,29 @@ import {
   Heading,
   Box,
 } from "@chakra-ui/react";
-import { createRef, useContext, useState } from "react";
+import { createRef, useContext } from "react";
+import GetProposal from "../components/proposals/get-proposal";
+import GetVoter from "../components/get-voter/get-voter";
 import { handleError } from "../utils/common";
 import GlobalContext from "../utils/global-context";
+import AddProposal from "../components/proposals/add-proposal";
+import VoteProposal from "../components/proposals/vote-proposal";
 
 export default function Owner(props) {
-  const { contract, contractWithSigner, currentStatus } = props;
+  const { contractWithSigner, currentStatus } = props;
   const global = useContext(GlobalContext);
 
   let voterInputValue = createRef();
 
-  const addVoter = async () => {
+  const sendTx = async (functionName, txData) => {
     try {
       global.update({ ...global, txLoading: true });
-      const tx = await contractWithSigner.addVoter(
-        voterInputValue.current.value
-      );
+      let tx;
+      if (txData) {
+        tx = await contractWithSigner[functionName](txData);
+      } else {
+        tx = await contractWithSigner[functionName]();
+      }
       await tx.wait();
       global.update({ ...global, txLoading: false });
     } catch (error) {
@@ -32,16 +39,28 @@ export default function Owner(props) {
     }
   };
 
+  const addVoter = () => {
+    sendTx("addVoter", voterInputValue.current.value);
+  };
+
   const startProposalsRegistration = async () => {
-    try {
-      global.update({ ...global, txLoading: true });
-      const txVoter = await contractWithSigner.startProposalsRegistering();
-      await txVoter.wait();
-      global.update({ ...global, txLoading: false });
-    } catch (error) {
-      global.update({ ...global, txLoading: false });
-      handleError(error);
-    }
+    sendTx("startProposalsRegistering");
+  };
+
+  const endProposalsRegistering = async () => {
+    sendTx("endProposalsRegistering");
+  };
+
+  const startVotingSession = async () => {
+    sendTx("startVotingSession");
+  };
+
+  const endVotingSession = async () => {
+    sendTx("endVotingSession");
+  };
+
+  const tallyVotes = async () => {
+    sendTx("tallyVotes");
   };
 
   return (
@@ -49,7 +68,11 @@ export default function Owner(props) {
       <Box padding="6">
         <Heading textAlign={"center"}>Actions</Heading>
       </Box>
-      <Stack direction="column" spacing={8}>
+      <Divider borderColor="gray.200" mb="6" />
+      <Stack direction="column" spacing={8} mb="8">
+        <GetVoter contractWithSigner={contractWithSigner}></GetVoter>
+        <GetProposal contractWithSigner={contractWithSigner}></GetProposal>
+        <Divider />
         <InputGroup>
           <InputLeftAddon>Add voter</InputLeftAddon>
           <Input
@@ -69,7 +92,14 @@ export default function Owner(props) {
             </Button>
           </Box>
         </InputGroup>
-        <Divider />
+        <AddProposal
+          contractWithSigner={contractWithSigner}
+          currentStatus={currentStatus}
+        ></AddProposal>
+        <VoteProposal
+          contractWithSigner={contractWithSigner}
+          currentStatus={currentStatus}
+        ></VoteProposal>
         <Button
           colorScheme="teal"
           variant="solid"
@@ -81,6 +111,7 @@ export default function Owner(props) {
         <Button
           colorScheme="teal"
           variant="solid"
+          onClick={endProposalsRegistering}
           disabled={currentStatus === 1 ? false : true}
         >
           End Proposals registration
@@ -88,6 +119,7 @@ export default function Owner(props) {
         <Button
           colorScheme="teal"
           variant="solid"
+          onClick={startVotingSession}
           disabled={currentStatus === 2 ? false : true}
         >
           Start Voting session
@@ -95,6 +127,7 @@ export default function Owner(props) {
         <Button
           colorScheme="teal"
           variant="solid"
+          onClick={endVotingSession}
           disabled={currentStatus === 3 ? false : true}
         >
           End Voting session
@@ -102,6 +135,7 @@ export default function Owner(props) {
         <Button
           colorScheme="teal"
           variant="solid"
+          onClick={tallyVotes}
           disabled={currentStatus === 4 ? false : true}
         >
           Tally votes

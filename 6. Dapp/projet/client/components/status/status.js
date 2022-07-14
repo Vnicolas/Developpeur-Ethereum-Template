@@ -15,7 +15,7 @@ export default function Status(props) {
 
   return (
     <>
-      <Box padding="6">
+      <Box padding="6" mb="4">
         <VStack
           divider={<StackDivider borderColor="gray.200" />}
           spacing={6}

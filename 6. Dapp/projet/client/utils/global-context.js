@@ -5,6 +5,8 @@ const GlobalContext = React.createContext({
   userAccount: undefined,
   provider: undefined,
   isOwner: false,
+  modalOptions: {},
+  modalOpened: false,
   txLoading: false,
 });
 

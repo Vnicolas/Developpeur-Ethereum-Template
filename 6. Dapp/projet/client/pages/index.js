@@ -1,28 +1,44 @@
 import Header from "../components/header/header";
-import { Box, Center, CircularProgress, SimpleGrid } from "@chakra-ui/react";
-import { useContext, useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  Center,
+  CircularProgress,
+  Divider,
+  SimpleGrid,
+  Text,
+} from "@chakra-ui/react";
+import { useContext, useEffect, useRef, useState } from "react";
 import GlobalContext from "../utils/global-context";
 import contractInstance from "../utils/get-contract";
 import Owner from "./owner";
 import Status from "../components/status/status";
 import Voter from "./voter";
-import { handleSuccess, handleInfos } from "../utils/common";
+import {
+  subscribeToVoterAdded,
+  subscribeToProposalRegistered,
+  subscribeToVoted,
+} from "../utils/subscribers";
+import { handleError, handleInfos, handleSuccess } from "../utils/common";
 
 export default function Home() {
   const [contract, setContract] = useState();
   const [contractWithSigner, setContractWithSigner] = useState();
   const [currentStatus, setCurrentStatus] = useState();
-  const { provider, walletConnected, isOwner, txLoading } =
-    useContext(GlobalContext);
+  const global = useContext(GlobalContext);
+  const { provider, walletConnected, isOwner, txLoading } = global;
 
-  const subscribeToStatus = (contract) => {
-    contract.off("WorkflowStatusChange");
-    contract.on("WorkflowStatusChange", (...args) => {
+  let currentContract = useRef();
+  currentContract.current = contract;
+
+  const subscribeToStatus = async () => {
+    const startBlockNumber = await provider.getBlockNumber();
+    currentContract.current.off("WorkflowStatusChange");
+    currentContract.current.on("WorkflowStatusChange", (...args) => {
       const event = args[args.length - 1];
-      if (event.blockNumber <= startBlockNumber) return; // do not react to this event
-      console.log(`Status changed from ${args[0]} to ${args[1]}`);
+      if (event.blockNumber < startBlockNumber) return; // do not react to this event
       setCurrentStatus(args[1]);
-      const toastMessage = `New status setted !`;
+      const toastMessage = "New status setted !";
       if (isOwner) {
         handleSuccess(toastMessage);
       } else {
@@ -31,59 +47,50 @@ export default function Home() {
     });
   };
 
-  const subscribeToVoterAdded = async (contract, provider) => {
-    const startBlockNumber = await provider.getBlockNumber();
-    contract.off("VoterRegistered");
-    contract.on("VoterRegistered", (...args) => {
-      const event = args[args.length - 1];
-      if (event.blockNumber <= startBlockNumber) return; // do not react to this event
-      const voterAddr = args[0];
-      const toastMessage = `New voter added : ${voterAddr}`;
-      if (isOwner) {
-        handleSuccess(toastMessage);
-      } else {
-        handleInfos(toastMessage);
-      }
-    });
-  };
-
-  const subscribeToProposalRegistered = async (contract, provider) => {
-    const startBlockNumber = await provider.getBlockNumber();
-    contract.off("ProposalRegistered");
-    contract.on("ProposalRegistered", (...args) => {
-      const event = args[args.length - 1];
-      if (event.blockNumber <= startBlockNumber) return; // do not react to this event
-      const newProposalId = args[0];
-      const toastMessage = `New proposal added : ${newProposalId}`;
-      if (isOwner) {
-        handleInfos(toastMessage);
-      } else {
-        handleSuccess(toastMessage);
-      }
-    });
-  };
-
-  const getStatus = async (contract) => {
-    const currentStatus = await contract.workflowStatus();
+  const getStatus = async () => {
+    const currentStatus = await currentContract.current.workflowStatus();
     setCurrentStatus(currentStatus);
-    subscribeToStatus(contract);
+    subscribeToStatus();
+  };
+
+  const getWinningProposal = async () => {
+    const winningProposalId = await currentContract.current.winningProposalId();
+    try {
+      const proposal = await contractWithSigner.getOneProposal(
+        winningProposalId
+      );
+      const modalOptions = {
+        type: "proposal",
+        title: "Wining Proposal Infos",
+        data: proposal,
+      };
+      global.update({ ...global, modalOptions, modalOpened: true });
+    } catch (error) {
+      handleError(error);
+    }
   };
 
   const init = async () => {
     if (provider && walletConnected) {
       const _contract = await contractInstance(provider);
       setContract(_contract);
-      const signer = provider.getSigner();
-      setContractWithSigner(_contract.connect(signer));
-      getStatus(_contract);
-      subscribeToVoterAdded(_contract, provider);
-      subscribeToProposalRegistered(_contract, provider);
     }
   };
 
   useEffect(() => {
     init();
   }, [provider, walletConnected]);
+
+  useEffect(() => {
+    if (currentContract.current) {
+      const signer = provider.getSigner();
+      setContractWithSigner(contract.connect(signer));
+      getStatus();
+      subscribeToVoterAdded(contract, provider, isOwner);
+      subscribeToProposalRegistered(contract, provider, isOwner);
+      subscribeToVoted(contract, provider);
+    }
+  }, [contract]);
 
   return (
     <>
@@ -98,15 +105,12 @@ export default function Home() {
               <Box w="400px">
                 {isOwner && (
                   <Owner
-                    contract={contract}
                     contractWithSigner={contractWithSigner}
                     currentStatus={currentStatus}
                   ></Owner>
                 )}
                 {!isOwner && (
                   <Voter
-                    provider={provider}
-                    contract={contract}
                     contractWithSigner={contractWithSigner}
                     currentStatus={currentStatus}
                   ></Voter>
@@ -129,6 +133,22 @@ export default function Home() {
           </Center>
         )}
       </Center>
+      {currentStatus === 5 && (
+        <>
+          <Divider></Divider>
+          <Center>
+            <Box p="8">
+              <Button
+                colorScheme="teal"
+                variant="solid"
+                onClick={getWinningProposal}
+              >
+                Get Winning Proposal
+              </Button>
+            </Box>
+          </Center>
+        </>
+      )}
     </>
   );
 }
