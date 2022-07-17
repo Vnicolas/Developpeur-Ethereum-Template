@@ -104,9 +104,7 @@ const Header = () => {
         )}
 
         <Box p="4" borderRadius="lg">
-          {!global.walletConnected && (
-            <span>Not connected, please be on Ropsten Network</span>
-          )}
+          {!global.walletConnected && <span>Not connected</span>}
           {global.walletConnected && (
             <Tag
               size="lg"

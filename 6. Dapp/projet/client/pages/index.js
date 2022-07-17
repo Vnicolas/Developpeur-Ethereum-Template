@@ -36,7 +36,7 @@ export default function Home() {
     currentContract.current.off("WorkflowStatusChange");
     currentContract.current.on("WorkflowStatusChange", (...args) => {
       const event = args[args.length - 1];
-      if (event.blockNumber < startBlockNumber) return; // do not react to this event
+      if (event.blockNumber <= startBlockNumber) return; // do not react to this event
       setCurrentStatus(args[1]);
       const toastMessage = "New status setted !";
       if (isOwner) {

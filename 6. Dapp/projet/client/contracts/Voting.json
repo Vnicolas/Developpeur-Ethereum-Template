@@ -22857,7 +22857,13 @@
     "version": "0.8.14+commit.80d49f37.Emscripten.clang"
   },
   "networks": {
-    "1657810946117": {
+    "3": {
+      "events": {},
+      "links": {},
+      "address": "0x25894FC05072d05721379CF9BE09Df345CF2665b",
+      "transactionHash": "0x64ff3709f18f3b51096b1f996f695660ad64d2379d6284512c93d9322b2577fb"
+    },
+    "1658059966374": {
       "events": {},
       "links": {},
       "address": "0xc12eae2b2702bb9e6777c48f5e9FcDE96593830C",
@@ -22865,7 +22871,7 @@
     }
   },
   "schemaVersion": "3.4.4",
-  "updatedAt": "2022-07-14T15:02:45.111Z",
+  "updatedAt": "2022-07-17T12:30:39.770Z",
   "networkType": "ethereum",
   "devdoc": {
     "author": "Nicolas Vairaa",
